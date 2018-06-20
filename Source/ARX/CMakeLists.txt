@@ -34,6 +34,10 @@ if (OPENGLES2_FOUND)
     set(HAVE_GLES2 1)
     set(USE_GL_STATE_CACHE 1)
 endif()
+if (${ARX_TARGET_PLATFORM_EMSCRIPTEN})
+    set(HAVE_GLES2 1)
+endif()
+
 if(ARX_TARGET_PLATFORM_WINDOWS)
     set(GL3_PATH "${PROJECT_SOURCE_DIR}/depends/windows/include")
 endif()
@@ -52,6 +56,7 @@ if ((HAVE_GL OR HAVE_GL3) AND HAVE_GLES2)
     endif()
 endif()
 
+message("OPENGL_INCLUDE_DIR: ${OPENGL_INCLUDE_DIR}")
 # Create ARX/AR/config.h and allow subdirectories to find it.
 configure_file(AR/include/ARX/AR/config.h.in AR/include/ARX/AR/config.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/AR/include)
@@ -135,7 +140,6 @@ add_dependencies(ARX
     ARUtil
     ARG
 )
-
 target_link_libraries(ARX
     PRIVATE AR
     PRIVATE ARVideo
