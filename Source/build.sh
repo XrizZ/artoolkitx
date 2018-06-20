@@ -266,7 +266,7 @@ if [ $BUILD_EM ]; then
     emconfigure cmake .. -DCMAKE_BUILD_TYPE=${DEBUG+Debug}${DEBUG-Release}
     emmake make VERBOSE=1    # emmake make install${DEBUG-/strip}
     #./emcc [-Ox] project.bc -o project.js
-    #emcc ARX/AR/libAR.a -s USE_ZLIB=1 -o project.js
+    emcc ARX/libARX.so -o artoolkitX.js
 
 fi
 

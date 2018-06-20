@@ -57,24 +57,22 @@
 #   include <GL/gl.h>
 #   include <GL/glext.h>
 #elif !defined(__APPLE__)
-#       include <GL/gl.h>
-#       ifdef _WIN32
-#           include "GL/glext.h"
-#           include "GL/wglext.h"
-#       else
-#           if defined(GL_VERSION_1_2)
-#               include <GL/glext.h>
-#           endif
-#       ifdef __linux
-#           include <GL/glx.h>
-#       endif
-#   endif
+#  include <GL/gl.h>
+#  ifdef _WIN32
+#    include "GL/glext.h"
+#    include "GL/wglext.h"
+#  else
+#    ifdef GL_VERSION_1_2
+#      include <GL/glext.h>
+#    endif
+#    ifdef __linux
+#      include <GL/glx.h>
+#    endif
+#  endif
 #else
 #  include <OpenGL/gl.h>
 #  include <OpenGL/glext.h>
 #endif
-
-#endif  //HAVE_GL
 
 
 // ============================================================================
