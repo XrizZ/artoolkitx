@@ -227,7 +227,7 @@ endforeach()
 
 add_subdirectory(ARX)
 if(ARX_TARGET_PLATFORM_EMSCRIPTEN)
-    add_subdirectory(ARX.js)
+    add_subdirectory(artoolkitx.js)
 else()
     add_subdirectory(depends)
     add_subdirectory(Utilities)

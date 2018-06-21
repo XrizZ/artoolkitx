@@ -264,15 +264,9 @@ if [ $BUILD_EM ]; then
     cd build-em
     rm -f CMakeCache.txt
     emconfigure cmake .. -DCMAKE_BUILD_TYPE=${DEBUG+Debug}${DEBUG-Release}
-    emmake make VERBOSE=1
-    echo ${DEBUG}
-    # if [ "${DEBUG+Debug}" = "Debug" ] ; then
-    #     emcc -v ARX/libARX.a ../ARX.js/ARBindEM.cpp -I../ARX/include --bind -s WASM=0 -g -o artoolkitX.js
-    # else
-    #     echo "No debug ${DEBUG}"
-    #     emcc ARX/libARX.a -s WASM=0 -o artoolkitX.js
-    # fi
-
+    emmake make
+    cd artoolkitx.js; make install
+    #FIXME: the final artoolkitx.js creation complains about unresolved symbols from libJPEG that might become an issue further down the line
 fi
 
 fi
