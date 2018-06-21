@@ -226,6 +226,10 @@ foreach(d ${ARX_DEFINES})
 endforeach()
 
 add_subdirectory(ARX)
-add_subdirectory(depends)
-add_subdirectory(Utilities)
+if(ARX_TARGET_PLATFORM_EMSCRIPTEN)
+    add_subdirectory(ARX.js)
+else()
+    add_subdirectory(depends)
+    add_subdirectory(Utilities)
+endif()
 

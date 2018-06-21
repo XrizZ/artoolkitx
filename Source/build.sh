@@ -264,9 +264,14 @@ if [ $BUILD_EM ]; then
     cd build-em
     rm -f CMakeCache.txt
     emconfigure cmake .. -DCMAKE_BUILD_TYPE=${DEBUG+Debug}${DEBUG-Release}
-    emmake make VERBOSE=1    # emmake make install${DEBUG-/strip}
-    #./emcc [-Ox] project.bc -o project.js
-    emcc ARX/libARX.so -o artoolkitX.js
+    emmake make VERBOSE=1
+    echo ${DEBUG}
+    # if [ "${DEBUG+Debug}" = "Debug" ] ; then
+    #     emcc -v ARX/libARX.a ../ARX.js/ARBindEM.cpp -I../ARX/include --bind -s WASM=0 -g -o artoolkitX.js
+    # else
+    #     echo "No debug ${DEBUG}"
+    #     emcc ARX/libARX.a -s WASM=0 -o artoolkitX.js
+    # fi
 
 fi
 
