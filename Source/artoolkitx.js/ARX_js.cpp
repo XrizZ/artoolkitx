@@ -5,6 +5,7 @@
 
 #include <emscripten/bind.h>
 #include "ARX/ARX_c.h"
+#include "ARX_c.cpp"
 
 #define PIXEL_FORMAT_BUFFER_SIZE 1024
 
@@ -53,46 +54,15 @@ VideoParams getVideoParams() {
 // }
 
 EMSCRIPTEN_BINDINGS(constant_bindings) {
+    constant("arController", &gARTK);
 
-/*
-	function("setup", &setup);
-	function("teardown", &teardown);
-
-	function("_addMarker", &addMarker);
-	function("_addMultiMarker", &addMultiMarker);
-
-	function("getMultiMarkerNum", &getMultiMarkerNum);
-	function("getMultiMarkerCount", &getMultiMarkerCount);
-
-	function("_loadCamera", &loadCamera);
-
-	function("setMarkerInfoDir", &setMarkerInfoDir);
-	function("setMarkerInfoVertex", &setMarkerInfoVertex);
-
-	function("getTransMatSquare", &getTransMatSquare);
-	function("getTransMatSquareCont", &getTransMatSquareCont);
-
-	function("getTransMatMultiSquare", &getTransMatMultiSquare);
-	function("getTransMatMultiSquareRobust", &getTransMatMultiSquareRobust);
-
-	function("detectMarker", &detectMarker);
-	function("getMarkerNum", &getMarkerNum);
-
-	function("getMultiEachMarker", &getMultiEachMarkerInfo);
-	function("getMarker", &getMarkerInfo);
-*/
-
-	/* AR Toolkit C APIS */
-	// function("setDebugMode", &setDebugMode);
-	// function("getDebugMode", &getDebugMode);
-
-	// function("getProcessingImage", &getProcessingImage);
-
+    function("setLogLevel", &arwSetLogLevel);
 
     /*** artoolkitX lifecycle functions ***/
-    function("setLogLevel", &arwSetLogLevel);
     function("initialiseAR", &arwInitialiseAR);
     function("getARToolKitVersion", &getARToolKitVersion);
+    function("getError", &arwGetError);
+    
     function("isRunning", &arwIsRunning);
     function("isInitialized", &arwIsInited);
     function("stopRunning", &arwStopRunning);
@@ -151,35 +121,30 @@ EMSCRIPTEN_BINDINGS(constant_bindings) {
 
     //** ATTENTION: arwQueryTrackableVisibilityAndTransformation is exported inside append.js
     function("getTrackablePatternCount", &arwGetTrackablePatternCount);
-    
+    //** ATTENTION: arwGetTrackablePatternConfig is exported inside append.js
+    //** ATTENTION: arwGetTrackablePatternImage is exported inside append.js
 
-	// function("getLogLevel", &getLogLevel);
+    enum_<TrackableOptionsSettings>("TrackableOptionsSettings")
+        .value("ARW_TRACKABLE_OPTION_FILTERED", ARW_TRACKABLE_OPTION_FILTERED)
+        .value("ARW_TRACKABLE_OPTION_FILTER_SAMPLE_RATE", ARW_TRACKABLE_OPTION_FILTER_SAMPLE_RATE)
+        .value("ARW_TRACKABLE_OPTION_FILTER_CUTOFF_FREQ", ARW_TRACKABLE_OPTION_FILTER_CUTOFF_FREQ)
+        .value("ARW_TRACKABLE_OPTION_SQUARE_USE_CONT_POSE_ESTIMATION", ARW_TRACKABLE_OPTION_SQUARE_USE_CONT_POSE_ESTIMATION)
+        .value("ARW_TRACKABLE_OPTION_SQUARE_CONFIDENCE", ARW_TRACKABLE_OPTION_SQUARE_CONFIDENCE)
+        .value("ARW_TRACKABLE_OPTION_SQUARE_CONFIDENCE_CUTOFF", ARW_TRACKABLE_OPTION_SQUARE_CONFIDENCE_CUTOFF)
+        .value("ARW_TRACKABLE_OPTION_NFT_SCALE", ARW_TRACKABLE_OPTION_NFT_SCALE)
+        .value("ARW_TRACKABLE_OPTION_MULTI_MIN_SUBMARKERS", ARW_TRACKABLE_OPTION_MULTI_MIN_SUBMARKERS)
+        .value("ARW_TRACKABLE_OPTION_MULTI_MIN_CONF_MATRIX", ARW_TRACKABLE_OPTION_MULTI_MIN_CONF_MATRIX)
+        .value("ARW_TRACKABLE_OPTION_MULTI_MIN_CONF_PATTERN", ARW_TRACKABLE_OPTION_MULTI_MIN_CONF_PATTERN)
+    ;
 
-	// function("setProjectionNearPlane", &setProjectionNearPlane);
-	// function("getProjectionNearPlane", &getProjectionNearPlane);
+    function("setTrackableOptionBool", arwSetTrackableOptionBool);
+    function("setTrackableOptionInt", arwSetTrackableOptionInt);
+    function("setTrackableOptionFloat", arwSetTrackableOptionFloat);
+    function("getTrackableOptionBool", arwGetTrackableOptionBool);
+    function("getTrackableOptionInt", arwGetTrackableOptionInt);
+    function("getTrackableOptionFloat", arwGetTrackableOptionFloat);
 
-	// function("setProjectionFarPlane", &setProjectionFarPlane);
-	// function("getProjectionFarPlane", &getProjectionFarPlane);
+    /*** Utility ***/
 
-	// function("setThresholdMode", &setThresholdMode);
-	// function("getThresholdMode", &getThresholdMode);
-
-	// function("setThreshold", &setThreshold);
-	// function("getThreshold", &getThreshold);
-
-	// function("setPatternDetectionMode", &setPatternDetectionMode);
-	// function("getPatternDetectionMode", &getPatternDetectionMode);
-
-	// function("setPattRatio", &setPattRatio);
-	// function("getPattRatio", &getPattRatio);
-
-	// function("setMatrixCodeType", &setMatrixCodeType);
-	// function("getMatrixCodeType", &getMatrixCodeType);
-
-	// function("setLabelingMode", &setLabelingMode);
-	// function("getLabelingMode", &getLabelingMode);
-
-	// function("setImageProcMode", &setImageProcMode);
-	// function("getImageProcMode", &getImageProcMode);
-
+    //** ATTENTION: arwLoadOpticalParams is exported inside append.js
 }

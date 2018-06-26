@@ -560,7 +560,7 @@ extern "C" {
     /**
      * Constants for use with trackable option setters/getters.
      */
-    enum {
+    enum TrackableOptionsSettings{
         ARW_TRACKABLE_OPTION_FILTERED = 1,                         ///< bool, true for filtering enabled.
         ARW_TRACKABLE_OPTION_FILTER_SAMPLE_RATE = 2,               ///< float, sample rate for filter calculations.
         ARW_TRACKABLE_OPTION_FILTER_CUTOFF_FREQ = 3,               ///< float, cutoff frequency of filter.
