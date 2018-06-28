@@ -20,9 +20,137 @@ std::string getARToolKitVersion(){
     return returnValue;
 }
 
+ARParamLT *paramLT = NULL;
+ARHandle * arhandle = NULL;
+AR3DHandle *ar3DHandle = NULL;
+ARPattHandle *arPattHandle = NULL;
+
+void deleteHandle() {
+    if (arhandle != NULL) {
+        arPattDetach(arhandle);
+        arDeleteHandle(arhandle);
+        arhandle = NULL;
+    }
+    if (ar3DHandle != NULL) {
+        ar3DDeleteHandle(&(ar3DHandle));
+        ar3DHandle = NULL;
+    }
+    if (paramLT != NULL) {
+        arParamLTFree(&(paramLT));
+        paramLT = NULL;
+    }
+}
+
+int teardown() {
+
+    deleteHandle();
+    arPattDeleteHandle(arPattHandle);
+
+    // for (int i=0; i<arc->multi_markers.size(); i++) {
+    //     arMultiFreeConfig(arc->multi_markers[i].multiMarkerHandle);
+    // }
+
+    return 0;
+}
+
 int addTrackable(std::string cfg) {
     return arwAddTrackable(cfg.c_str());
 }
+
+ARController* returnARController() {
+    return gARTK;
+}
+
+std::shared_ptr<ARTrackerSquare> getSquareTracker() {
+    return gARTK->getSquareTracker();
+}
+int loadCamera(std::string cparam_name, ARParam *param) {
+    if (arParamLoad(cparam_name.c_str(), 1, param) < 0) {
+        ARLOGe("loadCamera(): Error loading parameter file %s for camera.\n", cparam_name.c_str());
+        return -1;
+    }
+    // int cameraID = gCameraID++;
+    // cameraParams[cameraID] = param;
+    // return cameraID;
+
+    int cameraId  = 0;
+    return cameraId;
+}
+
+int setCamera(ARParam *param, int width, int height) {
+
+    if (param->xsize != width || param->ysize != height) {
+        ARLOGw("*** Camera Parameter resized from %d, %d. ***\n", param->xsize, param->ysize);
+        arParamChangeSize(param, width, height, param);
+    }
+
+    deleteHandle();
+    
+    if ((paramLT = arParamLTCreate(param, AR_PARAM_LT_DEFAULT_OFFSET)) == NULL) {
+        ARLOGe("setCamera(): Error: arParamLTCreate.\n");
+        return -1;
+    }
+
+    // ARLOGi("setCamera(): arParamLTCreated\n..%d, %d\n", (arc->paramLT->param).xsize, (arc->paramLT->param).ysize);
+
+    // setup camera
+    
+    if ((arhandle = arCreateHandle(paramLT)) == NULL) {
+        ARLOGe("setCamera(): Error: arCreateHandle.\n");
+        return -1;
+    }
+    arSetPixelFormat(arhandle, AR_PIXEL_FORMAT_RGBA);
+
+    // ARLOGi("setCamera(): arCreateHandle done\n");
+
+
+    ar3DHandle = ar3DCreateHandle(param);
+    if (ar3DHandle == NULL) {
+        ARLOGe("setCamera(): Error creating 3D handle");
+        return -1;
+    }
+
+    // ARLOGi("setCamera(): ar3DCreateHandle done\n");
+
+    arPattAttach(arhandle, arPattHandle);
+    // ARLOGi("setCamera(): Pattern handler attached.\n");
+    return 0;
+}
+
+
+extern "C" {
+    int detectMarker(ARUint8 *videoFrame, ARUint8 *videoLuma) {
+        AR2VideoBufferT buff = {0};
+        buff.buff = videoFrame;
+        buff.fillFlag = 1;
+
+        buff.buffLuma = videoLuma;
+        ARHandle* handle = arCreateHandle(NULL);
+        return arDetectMarker(handle, &buff);
+    }
+
+	/**
+	 * Initialises and starts video capture.
+	 * @param vconf		The video configuration string
+	 * @param cparaBuff	A string containing the contents of a camera parameter file, which is used to form the projection matrix.
+	 * @param cparaBuffLen	Number of characters in cparaBuff.
+	 * @return			true if successful, false if an error occurred
+	 * @see				arwStopRunning()
+	 */
+    bool arwStartRunningJS(std::string cparaName, int width, int height) {
+        ARParam param;
+        
+        if(loadCamera(cparaName, &param) < 0 ) {
+            return false;
+        }
+        setCamera(&param, width, height);
+
+        return true;
+    }
+}
+//setup function needed
+// arSetPixelFormat()
+
 
 struct VideoParams {
     int width;
@@ -54,13 +182,13 @@ VideoParams getVideoParams() {
 // }
 
 EMSCRIPTEN_BINDINGS(constant_bindings) {
-    constant("arController", &gARTK);
 
     function("setLogLevel", &arwSetLogLevel);
 
     /*** artoolkitX lifecycle functions ***/
     function("initialiseAR", &arwInitialiseAR);
     function("getARToolKitVersion", &getARToolKitVersion);
+    function("arwStartRunningJS", &arwStartRunningJS);
     function("getError", &arwGetError);
     
     function("isRunning", &arwIsRunning);
@@ -69,7 +197,7 @@ EMSCRIPTEN_BINDINGS(constant_bindings) {
     function("shutdownAR", &arwShutdownAR);
 
     /*** Video stream management ***/
-    //* ATTENTION: arwGetProjectionMatrix is exported from append.js
+    //* ATTENTION: arwGetProjectionMatrix is exported from ARX_additions.js
 
     value_object<VideoParams>("VideoParams")
         .field("width", &VideoParams::width)
@@ -80,6 +208,10 @@ EMSCRIPTEN_BINDINGS(constant_bindings) {
 
     function("capture", &arwCapture);
     function("updateAR", &arwUpdateAR);
+
+    /*** Video stream retrieval and/or drawing ***/
+
+
 
     /*** Tracking configuration ***/
     enum_<TrackableOptions>("TrackableOptions")
@@ -106,6 +238,17 @@ EMSCRIPTEN_BINDINGS(constant_bindings) {
 
     /*** Trackable management ***/
 
+    /**
+	 * Adds a trackable as specified in the given configuration string. The format of the string can be
+	 * one of:
+     * - Square marker from pattern file: "single;pattern_file;pattern_width", e.g. "single;data/hiro.patt;80"
+     * - Square marker from pattern passed in config: "single_buffer;pattern_width;buffer=[]", e.g. "single_buffer;80;buffer=234 221 237..."
+     * - Square barcode marker: "single_barcode;barcode_id;pattern_width", e.g. "single_barcode;0;80"
+     * - Multi-square marker: "multi;config_file", e.g. "multi;data/multi/marker.dat"
+     * - NFT marker: "nft;nft_dataset_pathname", e.g. "nft;gibraltar"
+	 * @param cfg		The configuration string
+	 * @return			The unique identifier (UID) of the trackable instantiated based on the configuration string, or -1 if an error occurred
+	 */
     function("addTrackable", &addTrackable);
 
     //TODO: To be implemented
@@ -115,14 +258,14 @@ EMSCRIPTEN_BINDINGS(constant_bindings) {
     //     .field("matrix", &ARWTrackableStatus::matrix)
     //     .field("matrixR", &ARWTrackableStatus::matrixR)
     // ;
-    // function("arwGetTrackables", &arwGetTrackables);
+    // function("getTrackables", &arwGetTrackables);
     function("removeTrackable", &arwRemoveTrackable);
     function("removeAllTrackables", &arwRemoveAllTrackables);
 
-    //** ATTENTION: arwQueryTrackableVisibilityAndTransformation is exported inside append.js
+    //** ATTENTION: arwQueryTrackableVisibilityAndTransformation is exported inside ARX_additions.js
     function("getTrackablePatternCount", &arwGetTrackablePatternCount);
-    //** ATTENTION: arwGetTrackablePatternConfig is exported inside append.js
-    //** ATTENTION: arwGetTrackablePatternImage is exported inside append.js
+    //** ATTENTION: arwGetTrackablePatternConfig is exported inside ARX_additions.js
+    //** ATTENTION: arwGetTrackablePatternImage is exported inside ARX_additions.js
 
     enum_<TrackableOptionsSettings>("TrackableOptionsSettings")
         .value("ARW_TRACKABLE_OPTION_FILTERED", ARW_TRACKABLE_OPTION_FILTERED)
@@ -137,14 +280,15 @@ EMSCRIPTEN_BINDINGS(constant_bindings) {
         .value("ARW_TRACKABLE_OPTION_MULTI_MIN_CONF_PATTERN", ARW_TRACKABLE_OPTION_MULTI_MIN_CONF_PATTERN)
     ;
 
-    function("setTrackableOptionBool", arwSetTrackableOptionBool);
-    function("setTrackableOptionInt", arwSetTrackableOptionInt);
-    function("setTrackableOptionFloat", arwSetTrackableOptionFloat);
-    function("getTrackableOptionBool", arwGetTrackableOptionBool);
-    function("getTrackableOptionInt", arwGetTrackableOptionInt);
-    function("getTrackableOptionFloat", arwGetTrackableOptionFloat);
+    function("setTrackableOptionBool", &arwSetTrackableOptionBool);
+    function("setTrackableOptionInt", &arwSetTrackableOptionInt);
+    function("setTrackableOptionFloat", &arwSetTrackableOptionFloat);
+    function("getTrackableOptionBool", &arwGetTrackableOptionBool);
+    function("getTrackableOptionInt", &arwGetTrackableOptionInt);
+    function("getTrackableOptionFloat", &arwGetTrackableOptionFloat);
 
     /*** Utility ***/
 
-    //** ATTENTION: arwLoadOpticalParams is exported inside append.js
+    function("teardown", &teardown);
+    //** ATTENTION: arwLoadOpticalParams is exported inside ARX_additions.js
 }
