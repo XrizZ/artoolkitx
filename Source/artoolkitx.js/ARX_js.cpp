@@ -174,7 +174,7 @@ VideoParams getVideoParams() {
     return videoParams;
 }
 
-//TODO: to be implemente
+//TODO: to be implemented
 // bool getTrackables() {
 //     int count;
 //     ARWTrackableStatus status;

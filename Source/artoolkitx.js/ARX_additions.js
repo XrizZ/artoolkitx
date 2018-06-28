@@ -123,7 +123,7 @@ Module["loadOpticalParams"] = function(opticalParamName, opticalParamBuffer, pro
  * A result of 0 does not however, imply any markers were detected.
  */
 
-Module["detectMarker"] = async function(image, lumaImage) {
+Module["detectMarker"] = function(image, lumaImage) {
     var imagePtr = _arrayToHeap(image);
     var lumaPtr = _arrayToHeap(lumaImage);
 
@@ -132,8 +132,5 @@ Module["detectMarker"] = async function(image, lumaImage) {
     Module._free(imagePtr);
     Module._free(imagePtr);
 
-    if(success)
-        resolve();
-    else
-        reject();
+    return success;
 };
