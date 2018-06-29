@@ -2,24 +2,27 @@
 <html>
   <script src="artoolkitx.js"></script>
   <script>
-    console.log(Module.initialiseAR());
-    console.log('version result: ' + Module.getARToolKitVersion());
-    console.log('Is running: ' + Module.isRunning());
-    console.log('Is Initialized: ' + Module.isInitialized());
 
-    console.log('Video Params: ' + Module.getVideoParams());
+    // this is reached when everything is ready, and you can call methods on Module
+    console.log(ARXjs.initialiseAR());
+    console.log('version result: ' + ARXjs.getARToolKitVersion());
+    console.log('Is running: ' + ARXjs.isRunning());
+    console.log('Is Initialized: ' + ARXjs.isInitialized());
+
+    console.log('Video Params: ' + ARXjs.getVideoParams());
     var floatArray = new Float32Array(16);
-    console.log('Projection matrix: ' + Module.getProjectionMatrix(1,1000,floatArray));
-    var trackableId = Module.addTrackable("single_barcode;0;80");
+    console.log('Projection matrix: ' + ARXjs.getProjectionMatrix(1,1000,floatArray));
+    var trackableId = ARXjs.addTrackable("single_barcode;0;80");
     console.log('Add trackable: ' + trackableId);
-    console.log('Query pattern count: ' + Module.getTrackablePatternCount(trackableId));
-    console.log('Query trackable(' + trackableId + ') visiblity: ' + Module.queryTrackableVisibilityAndTransformation(trackableId));
-    console.log('getTrackablePatternConfig: ' + Module.getTrackablePatternConfig(trackableId,0).matrix);
-    console.log('getTrackablePatternImage: ' + Module.getTrackablePatternImage(trackableId,0));
-    console.log('arwLoadOpticalParams: ' + Module.loadOpticalParams('/camera_para_facetime.dat', undefined, 1.0, 1000.0));
+    console.log('Query pattern count: ' + ARXjs.getTrackablePatternCount(trackableId));
+    console.log('Query trackable(' + trackableId + ') visiblity: ' + ARXjs.queryTrackableVisibilityAndTransformation(trackableId));
+    console.log('getTrackablePatternConfig: ' + ARXjs.getTrackablePatternConfig(trackableId,0).matrix);
+    console.log('getTrackablePatternImage: ' + ARXjs.getTrackablePatternImage(trackableId,0));
+    // console.log('arwLoadOpticalParams: ' + ARXjs.loadOpticalParams('Data/camera_para.dat', undefined, 1.0, 1000.0));
 
-    console.log('Remove trackable: ' + Module.removeTrackable(trackableId));
-    console.log('Stop running: ' + Module.stopRunning());
-    console.log('Shutdown AR: ' + Module.shutdownAR());
+    console.log('Remove trackable: ' + ARXjs.removeTrackable(trackableId));
+    console.log('Stop running: ' + ARXjs.stopRunning());
+    console.log('Shutdown AR: ' + ARXjs.shutdownAR());
+
   </script>
 </html>
