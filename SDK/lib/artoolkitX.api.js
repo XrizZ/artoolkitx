@@ -1,4 +1,4 @@
-import * as arxjs from './artoolkitx.js';
+import arxjs from './artoolkitx.js';
 (function() {
 	'use strict';
 
@@ -52,14 +52,14 @@ import * as arxjs from './artoolkitx.js';
         this.cameraParaFileURL = cameraPara;
     };
 
-    ARController.prototype.start = async function() {
+    ARController.prototype.start = function() {
         arxjs.initialiseAR();
         console.log("Version: " + arxjs.getARToolKitVersion());
         var success = arxjs.arwStartRunningJS(this.cameraParaFileURL, this.videoWidth, this.videoHeight);
         if(success)
-            resolve(success);
+            return success;
         else
-            reject(success);
+            throw "Error while starting";
     }
 
 	/**

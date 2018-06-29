@@ -19,10 +19,13 @@ ar1.addEventListener('getMarker', (trackableInfo) => {
     console.log(trackableInfo.trackableId);
 });
 
-ar1.start().then(() => {
+try {
+    ar1.start();
     ar1.process();
-});
-
+}
+catch (e) {
+    console.log(e);
+}
 
 	// ar1.debugSetup();
 
